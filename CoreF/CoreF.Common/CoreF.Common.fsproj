@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Core.fs" />
+    <Compile Include="Result.fs" />
+    <Compile Include="AsyncResult.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="CaseInsensitiveString.fs" />
+  </ItemGroup>
+
+</Project>
