@@ -4,10 +4,18 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
+    <ProjectReference Include="..\CoreF.Domain\CoreF.Domain.fsproj" />
     <ProjectReference Include="..\CoreF.Mapping\CoreF.Mapping.fsproj" />
+    <ProjectReference Include="..\CoreF.Serialization\CoreF.Serialization.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core.fs" />
     <Compile Include="Routing.fs" />
+    <Compile Include="ApiVersion.fs" />
+    <Compile Include="Models.fs" />
+    <Compile Include="Serialization.fs" />
+    <Compile Include="EntryPoint.fs" />
+    <Compile Include="Response.fs" />
+    <Compile Include="Request.fs" />
   </ItemGroup>
 </Project>

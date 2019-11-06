@@ -6,10 +6,11 @@
 
   <ItemGroup>
     <Compile Include="Core.fs" />
+    <Compile Include="EventBus.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
+    <ProjectReference Include="..\CoreF.Domain\CoreF.Domain.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -2,6 +2,7 @@
 
 open CoreF.Common
 open CoreF.Mapping
+open CoreF.Serialization
 open System
 
 [<RequireQualifiedAccess>]
@@ -41,6 +42,8 @@ type IHttpRequest =
     abstract member Url: Uri
     abstract member Body: byte []
     abstract member Client: IHttpClientMetadata
+    abstract member ServerHost: string
+    abstract member Timestamp: DateTime
 
 type HttpRequestTemplateError =
 | WrongVerb
@@ -52,7 +55,7 @@ type HttpParameterValidationError =
 | MissingRequestBody
 | RequestBodyMustBeByteArrayOrString
 | ParameterNotFound of string
-| ErrorDeserializingRequest of exn
+| ErrorDeserializingRequest of SerializationError
 | NoDtoMappingFunctionFound of Type * Type
 | ErrorMappingValidatedObject of MappingError
 | ErrorFindingParameterMapping of (Type * Type) * MappingError

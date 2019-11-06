@@ -5,13 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Core.fs" />
-    <Compile Include="MappingBuilder.fs" />
-    <Compile Include="Mapper.fs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="9.0.0" />
+    <Compile Include="ValidationRule.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="ValidatedResult.fs" />
+    <Compile Include="ValidationBuilder.fs" />
+    <Compile Include="Extensions.fs" />
   </ItemGroup>
 
   <ItemGroup>

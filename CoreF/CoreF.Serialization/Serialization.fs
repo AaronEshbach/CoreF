@@ -3,10 +3,10 @@
 open CoreF.Common
 open System
 
-module Serialization =
+module Serializer =
     let private useSerializer f =
-        inject {
-            let! serializer = resolve<ISerializer>()
+        injected {
+            let! serializer = inject<ISerializer>()
             return f serializer
         }
 

@@ -1,10 +1,8 @@
 ﻿namespace CoreF.EventBus
 
 open CoreF.Common
+open CoreF.Domain
 open System
-
-type IEvent =
-    abstract member EventId: Guid
 
 type EventBusSubscriberError =
 | RetryableSubscriberError of string

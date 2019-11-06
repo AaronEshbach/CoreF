@@ -28,3 +28,24 @@ type ISerializer =
     abstract member SerializeToContent<'t> : 't -> Result<HttpContent, SerializationError>
     abstract member SerializeToString<'t> : 't -> Result<string, SerializationError>
     abstract member SerializeToStream<'t> : Stream -> 't -> Result<unit, SerializationError>
+
+type IJsonSerializer =
+    inherit ISerializer
+
+type IXmlSerializer =
+    inherit ISerializer
+
+[<AutoOpen>]
+module internal UnionHelpers =
+    open FSharp.Reflection 
+    open System.Xml.Serialization
+
+    let numberOfFields (unionCase: UnionCaseInfo) =
+        if unionCase.HasFields() then
+            unionCase.GetFields() |> Array.sumBy (fun field -> field.PropertyType.GetProperties().Length)
+        else
+            1
+
+    let getUnionCases = memoize (fun (unionType: Type) -> FSharpType.GetUnionCases(unionType, true) |> Array.sortByDescending numberOfFields)
+
+    let camelCase str = CodeIdentifier.MakeCamel(str)

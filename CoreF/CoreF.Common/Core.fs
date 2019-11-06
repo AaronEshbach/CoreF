@@ -1,6 +1,8 @@
 ﻿namespace CoreF.Common
 
+open FSharp.Reflection
 open System
+open System.Runtime.CompilerServices
 
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -71,10 +73,10 @@ module String =
     let inline notLike pattern = like pattern >> not
 
     /// Convert the given string to lowercase
-    let inline toLower str = if str |> isNotNullAndNotEmpty then str.ToLower() else str
+    let inline lowercase str = if str |> isNotNullAndNotEmpty then str.ToLower() else str
 
     /// Convert the given string to uppercase
-    let inline toUpper str = if str |> isNotNullAndNotEmpty then str.ToUpper() else str
+    let inline uppercase str = if str |> isNotNullAndNotEmpty then str.ToUpper() else str
 
     /// Replace all instances of the given substring in the string with the specified value
     let inline replace (find: string) (replace: string) (str: string) = 
@@ -165,3 +167,90 @@ module Url =
 
     let tryMakeRelativef formatFragment =
         Printf.ksprintf tryMakeRelative formatFragment    
+
+
+/// F# Discriminated Union Helper-functions
+module Union =
+    /// Attempt to Parse the given string as the specified Discriminated Union type
+    let inline tryParseType unionType name =
+        match FSharpType.GetUnionCases unionType |> Array.tryFind (fun case -> case.Name |> String.like name) with
+        | Some union -> 
+            try FSharpValue.MakeUnion(union, [||]) |> Some
+            with _ -> None
+        | _ -> 
+            None
+
+    /// Attempt to Parse the given string as the specified Discriminated Union type
+    let inline tryParse<'du> name =
+        name |> tryParseType typeof<'du> |> Option.map unbox<'du>
+
+    /// Parse the given string as the specified Discriminated Union type
+    let inline parseType unionType name =
+        match tryParseType unionType name with
+        | Some union -> union
+        | None -> failwithf "Could not find Discriminated Union Case '%s' in Type '%s'" name unionType.Name
+
+    /// Parse the given string as the specified Discriminated Union type
+    let inline parse<'du> name =
+        match tryParse<'du> name with
+        | Some union -> union
+        | None -> failwithf "Could not find Discriminated Union Case '%s' in Type '%s'" name typeof<'du>.Name
+
+    /// Find the union case of the specified type in the given Discriminated Union
+    let getCase<'a> (value: 'a) =
+        let union, _ = FSharpValue.GetUnionFields(value, typeof<'a>)
+        union
+
+    /// Find the name of the union case of the specified type in the given Discriminated Union
+    let getName<'a> (value: 'a) =
+        let case = getCase<'a> value
+        case.Name
+
+    /// Test if the two values are the same case of the given Discriminated Union
+    let isSameCase<'a> (value: 'a) (unionCase: 'a) =
+        let (leftCase, _) = FSharpValue.GetUnionFields(value, typeof<'a>)
+        let (rightCase, _) = FSharpValue.GetUnionFields(unionCase, typeof<'a>)
+        leftCase.Name = rightCase.Name
+        
+    /// Convert the specified F# Discriminated Union Case to the enum of the given type
+    let toEnum<'a> (union: UnionCaseInfo) =
+        Enum.GetNames(typeof<'a>)
+        |> Seq.find (fun name -> name = union.Name)
+        |> (fun name -> Enum.Parse(typeof<'a>, name) |> unbox<'a>)
+
+[<Extension>]
+type UnionCaseInfoExtensions =
+    [<Extension>]
+    static member HasFields (case: UnionCaseInfo) = 
+        case.GetFields() |> Array.isEmpty |> not
+
+/// .NET Enum Helper-functions
+module Enum =
+    /// Attempt to Parse the given string as the specified Enum type
+    let tryParse<'a> name =
+        match Enum.GetNames typeof<'a> |> Array.tryFind (String.like name) with
+        | Some enum -> Enum.Parse(typeof<'a>, enum) |> unbox<'a> |> Some
+        | _ -> None
+
+    /// Parse the given string as the specified Enum type
+    let parse<'a> name =
+        match tryParse<'a> name with
+        | Some value -> value
+        | None -> failwithf "Could not find Enum Value '%s' in Type '%s'" name typeof<'a>.Name    
+
+    /// Convert an enum into a DU with the same case names    
+    let toUnion<'union> value =
+        Enum.GetName(value.GetType(), value) |> Union.parse<'union>
+
+    /// Try to find matching union case for the given enum value    
+    let tryToUnion<'union> value =
+        try
+            match Enum.GetName(value.GetType(), value) with
+            | null -> None
+            | name -> name |> Union.tryParse<'union>
+        with _ ->
+            None
+
+    /// Convert an instance of an enum to the name of the enum case
+    let getName<'enum> (value: 'enum) =
+        Enum.GetName(typeof<'enum>, value)
