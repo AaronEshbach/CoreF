@@ -66,49 +66,51 @@ module HttpRequest =
         then Error WrongVerb
         else parseRoute url template.RouteTemplate
 
-    let mapParameter (provider: IServiceProvider) (request: IHttpRequest) (route: HttpRoute) (httpParameter: HttpRequestParameter) =
-        match httpParameter with
-        | BodyParameter parameter ->
-            if parameter.IsRaw then
-                match parameter with
-                | arrayParam when arrayParam.Type = typeof<byte []> ->
-                    request.Body |> box |> Ok
-                | stringParam when stringParam.Type = typeof<string> -> 
-                    request.Body |> Utf8.toString |> box |> Ok
-                | _ ->
-                    Error RequestBodyMustBeByteArrayOrString
-            else
-                request |> deserialize parameter.Type |> DependencyInjection.resolveAll provider
-        | HeaderParameter (name, parameter) ->
-            parameter.Type |> deserializeParameter
-                (fun _ ->
-                    let parameterName = CaseInsensitiveString.create name
-                    match request.Headers |> Map.tryFind parameterName with
-                    | Some parameterValue -> Ok (box parameterValue)
-                    | None -> Error <| ParameterNotFound name)
-        | MetadataParameter metaParameter ->
-            match metaParameter with
-            | RequestIdParameter parameter ->
-                match parameter.Type with
-                | t when t = typeof<RequestId> -> request.RequestId |> box |> Ok
-                | t when t = typeof<Guid> -> request.RequestId |> RequestId.guidValue |> box |> Ok
-                | t when t = typeof<string> -> request.RequestId |> RequestId.value |> box |> Ok
-                | other -> Error <| UnsupportedMetadataParameterType other
-            | RequestUrlParameter parameter ->
-                match parameter.Type with
-                | t when t = typeof<Uri> -> request.Url |> box |> Ok
-                | t when t = typeof<string> -> request.Url.AbsoluteUri |> box |> Ok
-                | other -> Error <| UnsupportedMetadataParameterType other
-        | UrlParameter parameter ->
-            parameter.Type |> deserializeParameter
-                (fun parameterType ->
-                    match route.GetParameter(parameter.Name, parameterType) with
-                    | Some routeParameter -> 
-                        Ok routeParameter
-                    | None ->
-                        match route.GetQueryParameter(parameter.Name, parameterType) with
-                        | Some queryParameter -> Ok queryParameter
-                        | None -> Error <| ParameterNotFound parameter.Name)
+    let mapParameter (request: IHttpRequest) (route: HttpRoute) (httpParameter: HttpRequestParameter) =
+        injected {
+            match httpParameter with
+            | BodyParameter parameter ->
+                if parameter.IsRaw then
+                    match parameter with
+                    | arrayParam when arrayParam.Type = typeof<byte []> ->
+                        return! request.Body |> box |> Ok
+                    | stringParam when stringParam.Type = typeof<string> -> 
+                        return! request.Body |> Utf8.toString |> box |> Ok
+                    | _ ->
+                        return! Error RequestBodyMustBeByteArrayOrString
+                else
+                   return! request |> deserialize parameter.Type |> Injected.mapError MissingParameterSerializationDependency
+            | HeaderParameter (name, parameter) ->                
+                return! parameter.Type |> deserializeParameter
+                    (fun _ ->
+                        let parameterName = CaseInsensitiveString.create name
+                        match request.Headers |> Map.tryFind parameterName with
+                        | Some parameterValue -> Ok (box parameterValue)
+                        | None -> Error <| ParameterNotFound name)
+            | MetadataParameter metaParameter ->
+                match metaParameter with
+                | RequestIdParameter parameter ->
+                    match parameter.Type with
+                    | t when t = typeof<RequestId> -> return! request.RequestId |> box |> Ok
+                    | t when t = typeof<Guid> -> return! request.RequestId |> RequestId.guidValue |> box |> Ok
+                    | t when t = typeof<string> -> return! request.RequestId |> RequestId.value |> box |> Ok
+                    | other -> return! Error <| UnsupportedMetadataParameterType other
+                | RequestUrlParameter parameter ->
+                    match parameter.Type with
+                    | t when t = typeof<Uri> -> return! request.Url |> box |> Ok
+                    | t when t = typeof<string> -> return! request.Url.AbsoluteUri |> box |> Ok
+                    | other -> return! Error <| UnsupportedMetadataParameterType other
+            | UrlParameter parameter ->
+                return! parameter.Type |> deserializeParameter
+                    (fun parameterType ->
+                        match route.GetParameter(parameter.Name, parameterType) with
+                        | Some routeParameter -> 
+                            Ok routeParameter
+                        | None ->
+                            match route.GetQueryParameter(parameter.Name, parameterType) with
+                            | Some queryParameter -> Ok queryParameter
+                            | None -> Error <| ParameterNotFound parameter.Name)
+        }
         |> fun result -> (httpParameter.Parameter, result)
 
     let checkVersion (entryPoint: IEntryPoint) (route: HttpRoute) =
@@ -140,30 +142,38 @@ module HttpRequest =
         | None ->
             Ok route
 
-    let checkEntryPoint provider (request: IHttpRequest) (entryPoint: IEntryPoint) (route: HttpRoute) =
-        let methodParameters = entryPoint.Parameters |> Array.Parallel.map (mapParameter provider request route)
-        let hasAllRequiredParameters =
-            methodParameters |> Array.forall (fun (parameter, value) -> 
-                match value with
-                | Ok _ -> true
-                | _ -> parameter.IsOptional)
+    let checkEntryPoint (request: IHttpRequest) (entryPoint: IEntryPoint) (route: HttpRoute) =
+        fun provider ->
+            let methodParameters = entryPoint.Parameters |> Array.Parallel.map (mapParameter request route)
+            let injectedParameters = 
+                methodParameters 
+                |> Seq.map (fun (parameter, injectedResult) -> parameter, Injected.run provider injectedResult)
+                |> Seq.toList
 
-        let hasMatchingBodyParameter = 
-            methodParameters
-            |> Array.filter (fun (parameter, _) -> parameter.IsBody)
-            |> Array.map snd
-            |> Array.forall Result.isOk
+            let hasAllRequiredParameters =
+                injectedParameters |> Seq.forall (fun (parameter, result) -> 
+                    match result with
+                    | Ok _ -> true
+                    | _ -> parameter.IsOptional)
 
-        if not hasAllRequiredParameters then
-            let validationErrors = methodParameters |> Array.choose (fun (_, value) ->
-                match value with
-                | Ok _ -> None
-                | Error error -> Some error)
-            validationErrors |> Array.toList |> MissingRequiredParameters |> EntryPointParametersDoNotMatch |> Error
-        elif hasMatchingBodyParameter then
-            Ok methodParameters
-        else 
-            Error (EntryPointParametersDoNotMatch InvalidRequestBodyType)
+            let hasMatchingBodyParameter = 
+                injectedParameters
+                |> List.filter (fun (parameter, _) -> parameter.IsBody)
+                |> List.map snd
+                |> List.forall Result.isOk
+
+            if not hasAllRequiredParameters then
+                let validationErrors = injectedParameters |> List.choose (fun (_, value) ->
+                    match value with
+                    | Ok _ -> None
+                    | Error error -> Some error)
+                validationErrors |> MissingRequiredParameters |> EntryPointParametersDoNotMatch |> Error
+            elif hasMatchingBodyParameter then
+                Ok injectedParameters
+            else 
+                Error (EntryPointParametersDoNotMatch InvalidRequestBodyType)
+        |> Reader
+        
 
     let getEntryPoints =
         let entryPoints = lazy(
@@ -186,7 +196,7 @@ module HttpRequest =
             |> Result.bind (checkContext entryPoint >> Result.mapError WrongRequestContext)
             |> Result.bind (checkVersion entryPoint >> Result.mapError WrongRequestContext))
 
-    let checkEntryPoints provider (request: IHttpRequest) =
+    let checkEntryPoints (request: IHttpRequest) =
         getMatchingRoutes (request.Method, request.Url)
         |> List.map (fun (entryPoint, routeResult) -> entryPoint, routeResult |> Result.bind (checkEntryPoint provider request entryPoint))
         |> List.map (fun (entryPoint, result) ->

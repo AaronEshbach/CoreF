@@ -6,6 +6,7 @@ open System.IO
 open System.Net.Http
 
 type SerializationError =
+| SerializerNotFound of DependencyInjectionError
 | ErrorSerializingType of Type * exn
 | ErrorDeserializingString of string * Type * exn
 | ErrorDeserializingBytes of byte [] * Type * exn

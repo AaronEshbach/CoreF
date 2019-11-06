@@ -28,6 +28,12 @@ module AsyncResult =
     let ofAsync (asyncResult: Async<Result<'a, 'e>>) =
         AsyncResult asyncResult
 
+    /// Create an Async Result from a value
+    let create value =
+        async {
+            return Ok value
+        } |> AsyncResult
+
     /// Convert AsyncResult<'a, 'e> to Async<Result<'a, 'e>>
     let toAsync (AsyncResult result) = result
 

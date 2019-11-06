@@ -56,6 +56,7 @@ type HttpParameterValidationError =
 | RequestBodyMustBeByteArrayOrString
 | ParameterNotFound of string
 | ErrorDeserializingRequest of SerializationError
+| MissingParameterSerializationDependency of DependencyInjectionError
 | NoDtoMappingFunctionFound of Type * Type
 | ErrorMappingValidatedObject of MappingError
 | ErrorFindingParameterMapping of (Type * Type) * MappingError

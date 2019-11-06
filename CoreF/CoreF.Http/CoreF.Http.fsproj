@@ -17,5 +17,7 @@
     <Compile Include="EntryPoint.fs" />
     <Compile Include="Response.fs" />
     <Compile Include="Request.fs" />
+    <Compile Include="Http.fs" />
+    <Compile Include="ApiBuilder.fs" />
   </ItemGroup>
 </Project>

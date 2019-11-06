@@ -9,6 +9,7 @@
     <Compile Include="Result.fs" />
     <Compile Include="AsyncResult.fs" />
     <Compile Include="Reader.fs" />
+    <Compile Include="DependencyInjection.fs" />
     <Compile Include="CaseInsensitiveString.fs" />
     <Compile Include="Reflection.fs" />
     <Compile Include="Cache.fs" />

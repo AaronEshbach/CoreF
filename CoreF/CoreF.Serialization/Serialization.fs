@@ -4,10 +4,16 @@ open CoreF.Common
 open System
 
 module Serializer =
-    let private useSerializer f =
+    let private useSerializer (f: ISerializer -> Result<_,_>) =
         injected {
-            let! serializer = inject<ISerializer>()
-            return f serializer
+            let! serializer = inject<ISerializer>() |> Injected.mapError SerializerNotFound
+            return! f serializer
+        }
+
+    let private useSerializerAsync (f: ISerializer -> AsyncResult<_,_>) =
+        injectedAsync {
+            let! serializer = injectAsync<ISerializer>() |> InjectedAsync.mapError SerializerNotFound
+            return! f serializer
         }
 
     let toBytes (object: 't) =
@@ -32,7 +38,7 @@ module Serializer =
         useSerializer <| fun serializer -> serializer.DeserializeStream<'t>(stream)
 
     let parseContent<'t> content =
-        useSerializer <| fun serializer -> serializer.DeserializeContent<'t>(content)
+        useSerializerAsync <| fun serializer -> serializer.DeserializeContent<'t>(content)
 
     let parseBytesAs (objectType: Type) bytes =
         useSerializer <| fun serializer -> serializer.DeserializeAsType objectType bytes
@@ -44,4 +50,4 @@ module Serializer =
         useSerializer <| fun serializer -> serializer.DeserializeStreamAsType objectType stream
 
     let parseContentAs (objectType: Type) content =
-        useSerializer <| fun serializer -> serializer.DeserializeContentAsType objectType content
+        useSerializerAsync <| fun serializer -> serializer.DeserializeContentAsType objectType content
