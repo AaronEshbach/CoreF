@@ -1,16 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="Core.fs" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
     <ProjectReference Include="..\CoreF.Mapping\CoreF.Mapping.fsproj" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Include="Core.fs" />
+    <Compile Include="Routing.fs" />
+  </ItemGroup>
 </Project>

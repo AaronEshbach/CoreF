@@ -115,3 +115,12 @@ module HttpMethod =
     | HttpMethod.Options -> "OPTIONS"
     | HttpMethod.Head -> "HEAD"
     | HttpMethod.Custom other -> other
+
+[<AutoOpen>]
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Constants =
+    [<Literal>] 
+    let TraceContext = "traceparent"
+
+    [<Literal>]
+    let NoCache = "no-cache"
