@@ -2,8 +2,11 @@
 
 open System
 
-/// Defines a dependency-injection 'Reader' monad
+/// Defines a standard 'Reader' monad
 type Reader<'a, 'b> = Reader of ('a -> 'b) 
+
+/// Defines a specialized Reader monad for Dependency Injection
+type Injected<'t> = Reader<IServiceProvider, 't>
 
 module Reader = 
     let run x (Reader f) = 
@@ -18,9 +21,13 @@ module Reader =
             run state (f z)
         Reader future
 
-type ReaderBuilder<'t, 'u>() = 
+type ReaderBuilder<'t, 'u> () = 
     member __.Return (x) = Reader.create x 
     member __.Bind (x, f) = Reader.bind f x 
+
+type InjectionBuilder<'t> () =
+    member __.Return (x) : Injected<_> = Reader.create x 
+    member __.Bind (x, f) : Injected<_> = Reader.bind f x 
 
 module DependencyInjection =
     type IServiceProvider with 
@@ -32,13 +39,15 @@ module DependencyInjection =
       then context |> unbox<'t>
       else context.GetService<'t>()
 
-    let resolveAll (reader: Reader<IServiceProvider, _>) (serviceProvider: IServiceProvider) = 
+    let resolveAll (reader: Injected<_>) (serviceProvider: IServiceProvider) = 
         let (Reader f) = reader
         f serviceProvider
 
 [<AutoOpen>]
 module ReaderMonad =
-    let inject<'t> = ReaderBuilder<IServiceProvider, 't>() 
+    let reader<'a, 'b> = ReaderBuilder<'a, 'b>() 
+
+    let inject<'t> = InjectionBuilder<'t>()
 
     let resolve<'t>() = Reader (fun (context: IServiceProvider) -> DependencyInjection.getService<'t> context) 
 
