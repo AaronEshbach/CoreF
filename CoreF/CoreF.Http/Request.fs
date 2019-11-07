@@ -79,7 +79,7 @@ module HttpRequest =
                     | _ ->
                         return! Error RequestBodyMustBeByteArrayOrString
                 else
-                   return! request |> deserialize parameter.Type |> Injected.mapError MissingParameterSerializationDependency
+                   return! request |> deserialize parameter.Type //|> Injected.mapError MissingParameterSerializationDependency
             | HeaderParameter (name, parameter) ->                
                 return! parameter.Type |> deserializeParameter
                     (fun _ ->
@@ -196,41 +196,55 @@ module HttpRequest =
             |> Result.bind (checkContext entryPoint >> Result.mapError WrongRequestContext)
             |> Result.bind (checkVersion entryPoint >> Result.mapError WrongRequestContext))
 
-    let checkEntryPoints (request: IHttpRequest) =
+    let checkEntryPoints (request: IHttpRequest) : Injected<CheckEntryPointResult, DependencyInjectionError> list =
         getMatchingRoutes (request.Method, request.Url)
-        |> List.map (fun (entryPoint, routeResult) -> entryPoint, routeResult |> Result.bind (checkEntryPoint provider request entryPoint))
-        |> List.map (fun (entryPoint, result) ->
-            match result with
-            | Ok parameters -> MatchesRequest {EntryPoint = entryPoint; Request = request; ParameterResults = parameters |> Array.toList}
-            | Error (HttpRequestTemplateDoesNotMatch error) -> RequestDoesNotMatchRouteTemplate {EntryPoint = entryPoint; Error = error}
-            | Error (EntryPointParametersDoNotMatch error) -> RequestParametersDoNotMatch {EntryPoint = entryPoint; Error = error}
-            | Error (WrongRequestContext error) -> RequestDoesNotMatchContext {EntryPoint = entryPoint; Error = error}
-            | Error (InvalidEntryPoint error) -> EntryPointIsNotValid  {EntryPoint = entryPoint; Error = error})
+        |> List.map (fun (entryPoint, routeResult) -> entryPoint, routeResult |> Injected.bindResult (checkEntryPoint request entryPoint))
+        |> List.map (fun (entryPoint, injectedResult) ->
+            fun provider ->
+                let result = injectedResult |> Reader.run provider
+                match result with
+                | Ok parameters -> MatchesRequest {EntryPoint = entryPoint; Request = request; ParameterResults = parameters}
+                | Error (HttpRequestTemplateDoesNotMatch error) -> RequestDoesNotMatchRouteTemplate {EntryPoint = entryPoint; Error = error}
+                | Error (EntryPointParametersDoNotMatch error) -> RequestParametersDoNotMatch {EntryPoint = entryPoint; Error = error}
+                | Error (WrongRequestContext error) -> RequestDoesNotMatchContext {EntryPoint = entryPoint; Error = error}
+                | Error (InvalidEntryPoint error) -> EntryPointIsNotValid  {EntryPoint = entryPoint; Error = error}
+                |> Ok
+            |> Reader)
 
-    let findMatchingEntryPoints provider (request: IHttpRequest) =
-        checkEntryPoints provider request
-        |> List.choose (fun result-> 
-            match result with 
-            | MatchesRequest entryPoint -> Some (entryPoint.EntryPoint, entryPoint.ParameterResults)
-            | _ -> None) 
-        |> List.sortByDescending (snd >> List.map snd >> List.filter Result.isOk >> List.length)
+    let findMatchingEntryPoints (request: IHttpRequest) =
+        injected {
+            let! results = checkEntryPoints request |> Injected.join
+            
+            return 
+                results
+                |> List.choose (fun result -> 
+                    match result with 
+                    | MatchesRequest entryPoint -> Some (entryPoint.EntryPoint, entryPoint.ParameterResults)
+                    | _ -> None) 
+                |> List.sortByDescending (snd >> List.map snd >> List.filter Result.isOk >> List.length)
+        }
 
-    let tryFindEntryPoint provider request =
-        request |> findMatchingEntryPoints provider |> List.tryHead
+    let tryFindEntryPoint request =
+        request |> findMatchingEntryPoints |> Injected.map List.tryHead
 
-    let findEntryPoint provider request =
-        checkEntryPoints provider request
-        |> List.fold (fun acc cur -> 
-            match acc with
-            | FoundMatches candidates ->
-                match cur with
-                | MatchesRequest entryPoint -> FoundMatches {candidates with AllMatches = entryPoint :: candidates.AllMatches}
-                | _ -> acc
-            | NoMatchesFound nonMatches ->
-                match cur with
-                | MatchesRequest entryPoint -> FoundMatches {AllMatches = [entryPoint]}
-                | nonMatching -> NoMatchesFound (nonMatching :: nonMatches)
-        ) (NoMatchesFound [])
+    let findEntryPoint request =
+        injected {
+            let! results = checkEntryPoints request |> Injected.join
+
+            return
+                results
+                |> List.fold (fun acc cur -> 
+                    match acc with
+                    | FoundMatches candidates ->
+                        match cur with
+                        | MatchesRequest entryPoint -> FoundMatches {candidates with AllMatches = entryPoint :: candidates.AllMatches}
+                        | _ -> acc
+                    | NoMatchesFound nonMatches ->
+                        match cur with
+                        | MatchesRequest entryPoint -> FoundMatches {AllMatches = [entryPoint]}
+                        | nonMatching -> NoMatchesFound (nonMatching :: nonMatches)
+                ) (NoMatchesFound [])
+        }
 
     let rec private toValidatedParameter (result: obj) = 
         try 

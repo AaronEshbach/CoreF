@@ -103,18 +103,11 @@ module HttpResponseData =
                                 | Ok result -> result |> Serializer.toString
                                 | Error error -> error |> Serializer.toString
                         
-                            match token with
-                            | Ok jsonToken ->
-                                jsonObject.[fieldName] <- JToken.Parse jsonToken
-                            | Error _ ->
-                                ()
+                            jsonObject.[fieldName] <- JToken.Parse token
                         }
 
-                    for field in standardFields do
-                        do! setField field
-
-                    for field in customFields do
-                        do! setField field
+                    do! standardFields |> Seq.map setField |> Injected.join |> Injected.ignore
+                    do! customFields |> Seq.map setField |> Injected.join |> Injected.ignore
 
                     return! jsonObject |> Serializer.toString
             }
@@ -137,9 +130,7 @@ module HttpResponseData =
                         match responseData with
                         | ObjectHttpResponse _ ->
                             let! result = Serializer.toString responseData
-                            match result with
-                            | Ok raw -> jsonObject.Add("data", JToken.Parse(raw))
-                            | Error _ -> ()
+                            jsonObject.Add("data", JToken.Parse(result))
                         | RawHttpResponse raw ->
                             match raw with
                             | empty when empty |> String.IsNullOrEmpty ->
@@ -154,7 +145,7 @@ module HttpResponseData =
         | _ -> 
             Serializer.toString o
     | RawHttpResponse json -> 
-        injected { return Ok json }
+        Injected.create json
 
     let value = function
     | ObjectHttpResponse o -> o

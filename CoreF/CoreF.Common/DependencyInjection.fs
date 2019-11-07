@@ -60,6 +60,9 @@ module Injected =
                     Error error
             |> Reader) (create [])
 
+    let ignore (i: Injected<_,_>) =
+        i |> map ignore
+
 type InjectionBuilder<'t> () =
     member __.Bind (x, f) : Injected<_,_> = Injected.bind f x
     member __.Bind (x, f) : Injected<_,_> = Injected.bindResult f x
@@ -69,7 +72,7 @@ type InjectionBuilder<'t> () =
     member __.Zero () : Injected<_,_> = Injected.create ()
     member __.Delay (f) : Injected<_,_> = f()
     member __.Combine (a, b) : Injected<_,_> =
-        a |> Reader.bind (fun () -> b)
+        a |> Injected.bind (fun () -> b)
     member this.TryFinally(body: unit -> Injected<_,_>, compensation) : Injected<_,_> =
         try 
             this.ReturnFrom(body())
@@ -82,7 +85,7 @@ type InjectionBuilder<'t> () =
                 | null -> () 
                 | disp -> disp.Dispose())
 
-    member this.While (guard, body: unit -> Reader<_,_>) : Injected<_,_> =
+    member this.While (guard, body: unit -> Injected<_,_>) : Injected<_,_> =
         if not (guard()) then 
             this.Zero()
         else
@@ -128,7 +131,22 @@ module InjectedAsync =
                     |> AsyncResult.toAsync
                 return futureState
             } |> AsyncResult
-        Reader future            
+        Reader future           
+        
+    let bindInjected<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: Injected<'a, 'e>) : InjectedAsync<'b, 'e> =
+        let future state =
+            async {
+                let result = x |> Reader.run state
+                let! futureState =
+                    match result with
+                    | Ok z ->
+                        Injected.run state (f z)
+                    | Error e ->
+                        Error e |> Async.create |> AsyncResult
+                    |> AsyncResult.toAsync
+                return futureState
+            } |> AsyncResult
+        Reader future           
 
     let map f x =
         bind (f >> create) x
@@ -152,13 +170,14 @@ module InjectedAsync =
 type AsyncInjectionBuilder<'t> () =
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bind f x
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindResult f x
+    member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindInjected f x
     member __.Return (x) : InjectedAsync<_,_> = InjectedAsync.create x 
     member __.ReturnFrom (x: InjectedAsync<_,_>) = x    
     member __.ReturnFrom (x: AsyncResult<_,_>) = InjectedAsync.returnFrom x
     member __.Zero () : InjectedAsync<_,_> = InjectedAsync.create ()
     member __.Delay (f) : InjectedAsync<_,_> = f()
     member __.Combine (a, b) : InjectedAsync<_,_> =
-        a |> Reader.bind (fun () -> b)
+        a |> InjectedAsync.bind (fun () -> b)
     member this.TryFinally(body: unit -> InjectedAsync<_,_>, compensation) : InjectedAsync<_,_> =
         try 
             this.ReturnFrom(body())
@@ -171,7 +190,7 @@ type AsyncInjectionBuilder<'t> () =
                 | null -> () 
                 | disp -> disp.Dispose())
 
-    member this.While (guard, body: unit -> Reader<_,_>) : InjectedAsync<_,_> =
+    member this.While (guard, body: unit -> InjectedAsync<_,_>) : InjectedAsync<_,_> =
         if not (guard()) then 
             this.Zero()
         else
@@ -199,10 +218,15 @@ module DependencyInjection =
         then context |> unbox<'t> |> Ok
         else context.GetService<'t>()
 
-    let resolve (serviceProvider: IServiceProvider) (reader: Injected<_,_>) = 
+    let resolve (container: IServiceProvider) (reader: Injected<_,_>) = 
         let (Reader f) = reader
-        f serviceProvider
+        f container
 
+    let resolveAsync (container: IServiceProvider) (reader: InjectedAsync<_,_>) = 
+        async {
+            let (Reader f) = reader
+            return! f container |> AsyncResult.toAsync
+        } |> AsyncResult
 
 [<AutoOpen>]
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

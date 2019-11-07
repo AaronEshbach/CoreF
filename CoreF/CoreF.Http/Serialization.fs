@@ -162,17 +162,17 @@ module internal Serialization =
                     match contentType with
                     | Like "*/json*" -> 
                         let! jsonSerializer = inject<IJsonSerializer>()
-                        return parameterType |> deserializeBody jsonSerializer.DeserializeAsType |> Ok
+                        return! parameterType |> deserializeBody jsonSerializer.DeserializeAsType |> Ok
                     | Like "*/xml*" -> 
                         let! xmlSerialiezr = inject<IXmlSerializer>()
-                        return parameterType |> deserializeBody xmlSerialiezr.DeserializeAsType |> Ok
+                        return! parameterType |> deserializeBody xmlSerialiezr.DeserializeAsType |> Ok
                     | other -> 
                         let! serializer = inject<ISerializer>()
-                        return parameterType |> deserializeBody serializer.DeserializeAsType |> Ok
+                        return! parameterType |> deserializeBody serializer.DeserializeAsType |> Ok
                 | None ->
                     let! serializer = inject<ISerializer>()
-                    return parameterType |> deserializeBody serializer.DeserializeAsType |> Ok
-            }
+                    return! parameterType |> deserializeBody serializer.DeserializeAsType |> Ok
+            } |> Injected.mapError (SerializerNotFound >> ErrorDeserializingRequest)
             
         
         deserializer |> Reader.map (Result.bind (fun f -> 
