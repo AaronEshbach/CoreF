@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>CoreF HTTP Framework for building RESTful services in F#</Description>
+    <PackageTags>coref http rest</PackageTags>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />

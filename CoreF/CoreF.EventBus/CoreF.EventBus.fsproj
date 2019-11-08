@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>EventBus Abstractios for CoreF Framework</Description>
+    <PackageReleaseNotes>coref events event-bus</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

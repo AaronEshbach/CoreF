@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>ASP.NET Middleware for running the CoreF HTTP Framework on .NET Core</Description>
+    <PackageTags>coref aspnet middleware</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>HTTP API Gateway based on the CoreF Framework</Description>
+    <PackageTags>coref rest api gateway</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

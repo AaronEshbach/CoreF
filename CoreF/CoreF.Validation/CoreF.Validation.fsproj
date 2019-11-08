@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>CoreF Domain Model Validation Library</Description>
+    <PackageTags>coref ddd validation</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
