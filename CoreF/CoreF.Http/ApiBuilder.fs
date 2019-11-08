@@ -77,6 +77,9 @@ type HttpApiBuilder () =
     
     member __.Bind(api : HttpApi<'a, 'c>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
         InjectedAsync.bind binder api
+
+    member __.Bind(injection : Injected<'a, 'c>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
+        injection |> InjectedAsync.bindInjected binder
     
     member __.Bind(result : AsyncResult<'a, 'c>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
         InjectedAsync.bindResult binder result

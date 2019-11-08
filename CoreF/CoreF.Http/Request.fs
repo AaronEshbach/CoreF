@@ -79,7 +79,7 @@ module HttpRequest =
                     | _ ->
                         return! Error RequestBodyMustBeByteArrayOrString
                 else
-                   return! request |> deserialize parameter.Type //|> Injected.mapError MissingParameterSerializationDependency
+                   return! request |> deserialize parameter.Type
             | HeaderParameter (name, parameter) ->                
                 return! parameter.Type |> deserializeParameter
                     (fun _ ->
@@ -366,13 +366,7 @@ module HttpRequest =
                 | :? MethodEntryPoint as methodEntryPoint ->
                     try 
                         match methodEntryPoint.Method.Invoke(null, callParameters) with
-                        | :? HttpResponse as response ->    
-                            return response |> Ok
-                        | :? Async<HttpResponse> as asyncResponse ->
-                            let! response = asyncResponse
-                            return response |> Ok
-                        | :? System.Threading.Tasks.Task<HttpResponse> as task ->
-                            let! response = task |> Async.AwaitTask
+                        | :? InjectedAsync<HttpResponse, HttpRequestError> as response ->
                             return response |> Ok
                         | other ->
                             return Error <| UnsupportedReturnType (other.GetType())
@@ -382,17 +376,16 @@ module HttpRequest =
                     return Error <| EntryPointTypeNotSupported (entryPoint.GetType())
             | Error error ->
                 return Error (RuntimeParameterValidationFailed error)
-        }
+        } |> AsyncResult
 
-    let callEntryPointAsync preRequest postRequest (entryPoint: IEntryPoint) (request: IHttpRequest) parameters =
-        async {
-            do! preRequest entryPoint request
+    let callEntryPointAsync (entryPoint: IEntryPoint) (request: IHttpRequest) parameters =
+        asyncResult {
             let! response = evaluateEntryPoint entryPoint parameters                
-            do! postRequest entryPoint request response
             return response               
         }
 
-    let callEntryPoint preRequest postRequest entryPoint request parameters =
-        callEntryPointAsync preRequest postRequest entryPoint request parameters
+    let callEntryPoint entryPoint request parameters =
+        callEntryPointAsync entryPoint request parameters
+        |> AsyncResult.toAsync
         |> Async.RunSynchronously
 
