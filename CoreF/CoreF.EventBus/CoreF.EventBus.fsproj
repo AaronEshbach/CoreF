@@ -7,6 +7,7 @@
     <Company>CoreF</Company>
     <Description>EventBus Abstractios for CoreF Framework</Description>
     <PackageReleaseNotes>coref events event-bus</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
