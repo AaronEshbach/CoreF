@@ -118,7 +118,30 @@ module InjectedAsync =
             } |> AsyncResult
         Reader future
 
-    let bindResult<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: AsyncResult<'a, 'e>) : InjectedAsync<'b, 'e> =
+    let bindAsync<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: Async<'a>) : InjectedAsync<'b, 'e> =
+        let future state =
+            async {
+                let! result = x 
+                let! future = Injected.run state (f result) |> AsyncResult.toAsync
+                return future
+            } |> AsyncResult
+        Reader future
+
+    let bindResult<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: Result<'a, 'e>) : InjectedAsync<'b, 'e> =
+        let future state =
+            async {
+                let! futureState =
+                    match x with
+                    | Ok z ->
+                        Injected.run state (f z)
+                    | Error e ->
+                        Error e |> Async.create |> AsyncResult
+                    |> AsyncResult.toAsync
+                return futureState
+            } |> AsyncResult
+        Reader future   
+        
+    let bindAsyncResult<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: AsyncResult<'a, 'e>) : InjectedAsync<'b, 'e> =
         let future state =
             async {
                 let! result = x |> AsyncResult.toAsync
@@ -131,7 +154,7 @@ module InjectedAsync =
                     |> AsyncResult.toAsync
                 return futureState
             } |> AsyncResult
-        Reader future           
+        Reader future
         
     let bindInjected<'a, 'b, 'e> (f: 'a -> InjectedAsync<'b, 'e>) (x: Injected<'a, 'e>) : InjectedAsync<'b, 'e> =
         let future state =
@@ -170,6 +193,8 @@ module InjectedAsync =
 type AsyncInjectionBuilder<'t> () =
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bind f x
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindResult f x
+    member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindAsyncResult f x
+    member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindAsync f x
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindInjected f x
     member __.Return (x) : InjectedAsync<_,_> = InjectedAsync.create x 
     member __.ReturnFrom (x: InjectedAsync<_,_>) = x    

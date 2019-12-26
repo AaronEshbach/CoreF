@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Model.fs" />
+    <Compile Include="Client.fs" />
+    <Compile Include="HttpBuilder.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
+    <ProjectReference Include="..\CoreF.Serialization\CoreF.Serialization.fsproj" />
+    <ProjectReference Include="..\CoreF.Validation\CoreF.Validation.fsproj" />
+  </ItemGroup>
+
+</Project>

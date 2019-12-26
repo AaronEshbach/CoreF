@@ -279,7 +279,7 @@ type JsonSerializer () =
         member __.SerializeToStream<'t> stream (value: 't) =
             value |> serializeToStream stream
         member __.SerializeToContent<'t> (value: 't) =
-            value |> serializeToString |> Result.map (fun s -> new StringContent(s, Utf8.encoding) :> HttpContent)
+            value |> serializeToString |> Result.map (fun s -> new StringContent(s, Utf8.encoding, "application/json") :> HttpContent)
 
         member __.Deserialize<'t> bytes =
             result {
