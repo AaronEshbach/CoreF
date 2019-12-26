@@ -19,7 +19,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Mapping", "CoreF.Mapp
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Validation", "CoreF.Validation\CoreF.Validation.fsproj", "{EBF3BA62-BC34-4388-B7DF-606C73C069AF}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Http.Middleware", "CoreF.Http.Middleware\CoreF.Http.Middleware.fsproj", "{9A8FBACC-200B-4A4B-92DE-71191EE0BC54}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Http.Middleware", "CoreF.Http.Middleware\CoreF.Http.Middleware.fsproj", "{9A8FBACC-200B-4A4B-92DE-71191EE0BC54}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Logging", "CoreF.Logging\CoreF.Logging.fsproj", "{A388E652-6413-47A0-B2DB-A18D42018D59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{9A8FBACC-200B-4A4B-92DE-71191EE0BC54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A8FBACC-200B-4A4B-92DE-71191EE0BC54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A8FBACC-200B-4A4B-92DE-71191EE0BC54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A388E652-6413-47A0-B2DB-A18D42018D59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A388E652-6413-47A0-B2DB-A18D42018D59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A388E652-6413-47A0-B2DB-A18D42018D59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A388E652-6413-47A0-B2DB-A18D42018D59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
