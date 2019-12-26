@@ -69,6 +69,24 @@ module AsyncResult =
     /// Map error type of an AsyncResult<'c, 'a> to AsyncResult<'c, 'b>
     let mapError f = mapResult <| Result.mapError f
 
+    /// Merge multiple Async Results into a single result with a list of any errors
+    let join (results: AsyncResult<'a, 'e> seq) =
+        results |> Seq.fold (fun acc cur ->
+            async {
+                let! accumulator = acc |> toAsync
+                let! current = cur |> toAsync
+                return
+                    match accumulator with
+                    | Ok values ->                     
+                        match current with
+                        | Ok value -> Ok (values @ [value])
+                        | Error error -> Error [error]
+                    | Error errors ->
+                        match current with
+                        | Error error -> Error (error :: errors)
+                        | _ -> Error errors
+            } |> AsyncResult) (Async.create (Ok []) |> AsyncResult)
+
     /// Convert Task<'a> to AsyncResult<'a, 'e>
     let ofTask<'a, 'error> (convertExceptionToError: exn -> 'error) (task: Task<'a>) =
         async {
@@ -91,6 +109,19 @@ module AsyncResult =
 
             return value
         } |> Async.StartAsTask
+
+    /// Parallelizes the execution of multiple AsyncResults and 
+    /// returns a single AsyncResult with a list of the results or errors
+    let Parallel computations =
+        async {
+            let! results =
+                computations
+                |> Seq.map toAsync
+                |> Async.Parallel
+
+            return results |> Result.join
+        } |> AsyncResult
+        
 
 [<Extension>]
 type TaskExtensions =
