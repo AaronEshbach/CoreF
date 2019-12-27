@@ -82,13 +82,13 @@ type HttpApiBuilder () =
         injection |> InjectedAsync.bindInjected binder
     
     member __.Bind(result : AsyncResult<'a, 'c>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
-        InjectedAsync.bindResult binder result
+        InjectedAsync.bindAsyncResult binder result
 
     member __.Bind(result : Result<'a, 'c>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
-        InjectedAsync.bindResult binder (result |> Async.create |> AsyncResult)
+        InjectedAsync.bindResult binder result
     
     member __.Bind(async : Async<'a>, binder : 'a -> HttpApi<'b, 'c>) : HttpApi<'b, 'c> = 
-        InjectedAsync.bindResult binder (async |> Async.map Ok |> AsyncResult)
+        InjectedAsync.bindAsyncResult binder (async |> Async.map Ok |> AsyncResult)
 
     member __.Combine (a, b) : HttpApi<_,_> =
         a |> InjectedAsync.bind (fun () -> b)

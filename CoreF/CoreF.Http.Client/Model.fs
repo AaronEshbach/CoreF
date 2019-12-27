@@ -20,4 +20,4 @@ type HttpClientResponse<'t> =
 | HttpClientError of HttpClientError
 | HttpServerError of HttpResponseMessage
 
-type AsyncHttpClientResponse<'t> = InjectedAsync<HttpClientResponse<'t>, SerializationError>
+type HttpClientCall<'t> = HttpClientCall of InjectedAsync<HttpClientResponse<'t>, SerializationError>

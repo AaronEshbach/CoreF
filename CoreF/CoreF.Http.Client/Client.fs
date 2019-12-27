@@ -25,7 +25,7 @@ module HttpClient =
         fSetup client
         client
 
-    let rec sendRequest<'dto> (f: HttpClient -> Uri -> Async<HttpResponseMessage>) (uri: Uri) (client: HttpClient) : AsyncHttpClientResponse<'dto> =
+    let rec sendRequest<'dto> (f: HttpClient -> Uri -> Async<HttpResponseMessage>) (uri: Uri) (client: HttpClient) : HttpClientCall<'dto> =
         injectedAsync {
             let! response = f client uri
             match response with
@@ -55,31 +55,35 @@ module HttpClient =
                     return HttpServerError error
                 | other ->
                     return HttpClientError (OtherClientError (other, error))
-        }
+        } |> HttpClientCall
 
-    let get<'dto> uri client : AsyncHttpClientResponse<'dto> =
+    let get<'dto> uri client : HttpClientCall<'dto> =
         client |> sendRequest<'dto> (fun client url -> client.GetAsync(url) |> Async.AwaitTask) uri
 
-    let post<'request, 'response> uri (request: 'request) client : AsyncHttpClientResponse<'response> =
+    let post<'request, 'response> uri (request: 'request) client : HttpClientCall<'response> =
         injectedAsync {
             let! requestContent = request |> Serializer.toContent
-            return! client |> sendRequest<'response> (fun client url -> client.PostAsync(url, requestContent) |> Async.AwaitTask) uri
-        }
+            let (HttpClientCall result) = client |> sendRequest<'response> (fun client url -> client.PostAsync(url, requestContent) |> Async.AwaitTask) uri
+            return! result
+        } |> HttpClientCall
 
-    let put<'request> uri request client : AsyncHttpClientResponse<unit> =
+    let put<'request> uri request client : HttpClientCall<unit> =
         injectedAsync {
             let! requestContent = request |> Serializer.toContent
-            return! client |> sendRequest<unit> (fun client url -> client.PutAsync(url, requestContent) |> Async.AwaitTask) uri
-        }
+            let (HttpClientCall result) = client |> sendRequest<unit> (fun client url -> client.PutAsync(url, requestContent) |> Async.AwaitTask) uri
+            return! result
+        } |> HttpClientCall
 
-    let patch<'request> uri request client : AsyncHttpClientResponse<unit> =
+    let patch<'request> uri request client : HttpClientCall<unit> =
         injectedAsync {
             let! requestContent = request |> Serializer.toContent
-            return! client |> sendRequest<unit> (fun client url -> 
-                use request = new HttpRequestMessage(HttpMethod("PATCH"), url)
-                request.Content <- requestContent
-                client.SendAsync(request) |> Async.AwaitTask) uri
-        }
+            let (HttpClientCall result) = 
+                client |> sendRequest<unit> (fun client url -> 
+                    use request = new HttpRequestMessage(HttpMethod("PATCH"), url)
+                    request.Content <- requestContent
+                    client.SendAsync(request) |> Async.AwaitTask) uri
+            return! result
+        } |> HttpClientCall
 
-    let delete uri client : AsyncHttpClientResponse<unit> =
+    let delete uri client : HttpClientCall<unit> =
         client |> sendRequest<unit> (fun client url -> client.DeleteAsync(url) |> Async.AwaitTask) uri

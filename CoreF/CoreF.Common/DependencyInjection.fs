@@ -43,7 +43,7 @@ module Injected =
             | Error e -> Error (f e)
         |> Reader 
 
-    let returnFrom (result: Result<_,_>) : Injected<_,_> =
+    let ofResult (result: Result<_,_>) : Injected<_,_> =
         Reader.create result
 
     let join (elements: Injected<'a,'e> seq) : Injected<'a list, 'e> =
@@ -68,7 +68,7 @@ type InjectionBuilder<'t> () =
     member __.Bind (x, f) : Injected<_,_> = Injected.bindResult f x
     member __.Return (x) : Injected<_,_> = Injected.create x 
     member __.ReturnFrom (x: Injected<_,_>) = x    
-    member __.ReturnFrom (x: Result<_,_>) = Injected.returnFrom x
+    member __.ReturnFrom (x: Result<_,_>) = Injected.ofResult x
     member __.Zero () : Injected<_,_> = Injected.create ()
     member __.Delay (f) : Injected<_,_> = f()
     member __.Combine (a, b) : Injected<_,_> =
@@ -187,8 +187,21 @@ module InjectedAsync =
             } |> AsyncResult
         |> Reader 
 
-    let returnFrom (result: AsyncResult<_,_>) : InjectedAsync<_,_> =
+    let ofAsyncResult (result: AsyncResult<_,_>) : InjectedAsync<_,_> =
         Reader.create result
+
+    let ofAsync (result: Async<_>) : InjectedAsync<_,_> =
+        result |> Async.map Ok |> AsyncResult |> ofAsyncResult
+
+    let ofInjected (injected: Injected<_,_>) : InjectedAsync<_,_> =
+        let future state =
+            async {
+                return injected |> Reader.run state
+            } |> AsyncResult
+        Reader future 
+
+    let ofResult (result: Result<_,_>) : InjectedAsync<_,_> =
+        result |> Async.create |> AsyncResult |> ofAsyncResult
 
 type AsyncInjectionBuilder<'t> () =
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bind f x
@@ -198,7 +211,10 @@ type AsyncInjectionBuilder<'t> () =
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindInjected f x
     member __.Return (x) : InjectedAsync<_,_> = InjectedAsync.create x 
     member __.ReturnFrom (x: InjectedAsync<_,_>) = x    
-    member __.ReturnFrom (x: AsyncResult<_,_>) = InjectedAsync.returnFrom x
+    member __.ReturnFrom (x: AsyncResult<_,_>) = InjectedAsync.ofAsyncResult x
+    member __.ReturnFrom (x: Async<_>) = InjectedAsync.ofAsync x
+    member __.ReturnFrom (x: Result<_,_>) = InjectedAsync.ofResult x
+    member __.ReturnFrom (x: Injected<_,_>) = InjectedAsync.ofInjected x
     member __.Zero () : InjectedAsync<_,_> = InjectedAsync.create ()
     member __.Delay (f) : InjectedAsync<_,_> = f()
     member __.Combine (a, b) : InjectedAsync<_,_> =
