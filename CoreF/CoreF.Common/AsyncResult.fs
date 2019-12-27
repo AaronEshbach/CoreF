@@ -24,18 +24,26 @@ module AsyncResult =
         inherit Exception(sprintf "%A" error)
         member __.Error = error
 
-    /// Convert Async<Result<'a, 'e>> to AsyncResult<'a, 'e>
-    let ofAsync (asyncResult: Async<Result<'a, 'e>>) =
-        AsyncResult asyncResult
-
     /// Create an Async Result from a value
     let create value =
         async {
             return Ok value
         } |> AsyncResult
 
+    /// Convert Async<Result<'a, 'e>> to AsyncResult<'a, 'e>
+    let ofAsync (asyncResult: Async<Result<'a, 'e>>) =
+        AsyncResult asyncResult
+
     /// Convert AsyncResult<'a, 'e> to Async<Result<'a, 'e>>
     let toAsync (AsyncResult result) = result
+
+    /// Convert Result<'a, 'e> to AsyncResult<'a, 'e>
+    let ofResult (result: Result<'a, 'e>) =
+        result |> Async.create |> AsyncResult
+
+    /// Convert AsyncResult<'a, 'e> to Result<'a, 'e>
+    let toResult result = 
+        result |> toAsync |> Async.RunSynchronously
 
     /// Standard monadic bind on AsyncResult
     /// Effectively composes Async.bind and Result.bind

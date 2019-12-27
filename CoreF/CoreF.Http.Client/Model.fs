@@ -20,4 +20,10 @@ type HttpClientResponse<'t> =
 | HttpClientError of HttpClientError
 | HttpServerError of HttpResponseMessage
 
-type HttpClientCall<'t> = HttpClientCall of InjectedAsync<HttpClientResponse<'t>, SerializationError>
+type HttpClientCallError =
+| InvalidRequestUri
+| SerializationError of SerializationError
+| DeserializationError of SerializationError
+| UnexpectedHttpClientError of exn
+
+type HttpClientCall<'t> = HttpClientCall of InjectedAsync<HttpClientResponse<'t>, HttpClientCallError>

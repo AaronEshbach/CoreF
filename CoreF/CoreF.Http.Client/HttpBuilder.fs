@@ -21,6 +21,25 @@ module HttpClientCall =
                 return HttpServerError error
         } |> HttpClientCall
 
+    let bindResult f result =
+        match result with
+        | Ok value -> 
+            f value
+        | Error error -> 
+            Error error |> InjectedAsync.ofResult |> HttpClientCall
+
+    let bindInjectedAsync f injected =
+        injected |> InjectedAsync.map HttpOk |> HttpClientCall |> bind f
+
+    let bindAsyncResult f result =
+        result |> InjectedAsync.ofAsyncResult |> bindInjectedAsync f
+
+    let bindAsync f asyncValue =
+        asyncValue |> InjectedAsync.ofAsync |> bindInjectedAsync f
+
+    let bindInjected f injected =
+        injected |> InjectedAsync.ofInjected |> bindInjectedAsync f
+
     let map f x = x |> bind (f >> create)
     
     let combine<'a> (acc: HttpClientCall<'a list>) cur =
@@ -61,6 +80,11 @@ module HttpClientCall =
 
 type HttpClientBuilder () =
     member __.Bind (x, f) = HttpClientCall.bind f x
+    member __.Bind (x, f) = HttpClientCall.bindResult f x
+    member __.Bind (x, f) = HttpClientCall.bindAsyncResult f x
+    member __.Bind (x, f) = HttpClientCall.bindAsync f x
+    member __.Bind (x, f) = HttpClientCall.bindInjectedAsync f x
+    member __.Bind (x, f) = HttpClientCall.bindInjected f x
     member __.Return x = HttpClientCall.create x
     member __.ReturnFrom (x: HttpClientCall<_>) : HttpClientCall<_> = x
     member __.ReturnFrom (x: AsyncResult<_,_>) : HttpClientCall<_> = HttpClientCall.ofAsyncResult x
