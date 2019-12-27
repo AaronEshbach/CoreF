@@ -67,14 +67,14 @@ module HttpClient =
             return! result
         } |> HttpClientCall
 
-    let put<'request> uri request client : HttpClientCall<unit> =
+    let put<'request> uri (request: 'request) client : HttpClientCall<unit> =
         injectedAsync {
             let! requestContent = request |> Serializer.toContent
             let (HttpClientCall result) = client |> sendRequest<unit> (fun client url -> client.PutAsync(url, requestContent) |> Async.AwaitTask) uri
             return! result
         } |> HttpClientCall
 
-    let patch<'request> uri request client : HttpClientCall<unit> =
+    let patch<'request> uri (request: 'request) client : HttpClientCall<unit> =
         injectedAsync {
             let! requestContent = request |> Serializer.toContent
             let (HttpClientCall result) = 
