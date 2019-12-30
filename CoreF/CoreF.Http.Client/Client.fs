@@ -3,6 +3,7 @@
 open CoreF.Common
 open CoreF.DependencyInjection
 open CoreF.Serialization
+open CoreF.Validation
 
 open System
 open System.Net
@@ -89,6 +90,20 @@ module HttpClient =
     let delete<'error> uri client : HttpClientCall<unit, 'error> =
         client |> sendRequest<unit, 'error> (fun client url -> client.DeleteAsync(url) |> Async.AwaitTask) uri
 
+    let map<'dto, 'model, 'validationError, 'clientError> (mapError: 'validationError list -> 'clientError) (create: 'dto -> ValidatedResult<'model, 'validationError>) ((HttpClientCall call): HttpClientCall<'dto, 'clientError>) =
+        injectedAsync {
+            let! response = call
+            match response with
+            | HttpOk dto ->
+                let! model = dto |> create |> ValidatedResult.toResult |> Result.mapError mapError |> Result.mapError ClientProcessingError
+                return HttpOk model
+            | HttpRedirect location ->
+                return HttpRedirect location
+            | HttpClientError error ->
+                return HttpClientError error
+            | HttpServerError error ->
+                return HttpServerError error
+        } |> HttpClientCall
 
 module Url =
     let parse (url: string) =
