@@ -85,6 +85,14 @@ module HttpClientCall =
     let run (container: System.IServiceProvider) (HttpClientCall x) =
         x |> DependencyInjection.resolveAsync container
 
+    let Parallel calls =
+        calls 
+        |> Seq.map value 
+        |> InjectedAsync.Parallel 
+        |> InjectedAsync.mapError MultipleHttpClientCallErrors 
+        |> InjectedAsync.map HttpClientResponse.join 
+        |> HttpClientCall
+
 type HttpClientBuilder () =
     member __.Bind (x, f) = HttpClientCall.bind f x
     member __.Bind (x, f) = HttpClientCall.bindResult f x

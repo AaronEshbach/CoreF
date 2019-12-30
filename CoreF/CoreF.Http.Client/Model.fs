@@ -24,6 +24,7 @@ type HttpClientCallError<'e> =
 | InvalidRequestUri
 | DeserializationError of SerializationError
 | ClientProcessingError of 'e
+| MultipleHttpClientCallErrors of HttpClientCallError<'e> list
 | UnexpectedHttpClientError of exn
 
 type NoClientProcessingError = NoClientProcessingError

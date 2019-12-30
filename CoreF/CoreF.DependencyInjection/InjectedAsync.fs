@@ -110,6 +110,13 @@ module InjectedAsync =
     let ofResult (result: Result<_,_>) : InjectedAsync<_,_> =
         result |> Async.create |> AsyncResult |> ofAsyncResult
 
+    let Parallel (values: InjectedAsync<_,_> seq) : InjectedAsync<_,_> =
+        let future state =
+            values
+            |> Seq.map (Injected.run state) 
+            |> AsyncResult.Parallel
+        Reader future
+
 type AsyncInjectionBuilder<'t> () =
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bind f x
     member __.Bind (x, f) : InjectedAsync<_,_> = InjectedAsync.bindResult f x
