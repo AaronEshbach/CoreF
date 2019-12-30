@@ -41,6 +41,9 @@ module HttpClientCall =
     let bindInjected f injected =
         injected |> InjectedAsync.ofInjected |> bindInjectedAsync f
 
+    let bindResponse f (response: HttpClientResponse<_>) =
+        response |> InjectedAsync.create |> HttpClientCall |> bind f
+
     let map f x = x |> bind (f >> create)
     
     let combine<'a, 'e> (acc: HttpClientCall<'a list, 'e>) cur =
@@ -74,6 +77,9 @@ module HttpClientCall =
     let ofResult (result: Result<_,_>) : HttpClientCall<_,_> =
         result |> Async.create |> AsyncResult |> ofAsyncResult
 
+    let ofResponse (response: HttpClientResponse<_>) : HttpClientCall<_,_> =
+        response |> InjectedAsync.create |> HttpClientCall
+
     let value (HttpClientCall x) = x
 
     let run (container: System.IServiceProvider) (HttpClientCall x) =
@@ -86,6 +92,7 @@ type HttpClientBuilder () =
     member __.Bind (x, f) = HttpClientCall.bindAsync f x
     member __.Bind (x, f) = HttpClientCall.bindInjectedAsync f x
     member __.Bind (x, f) = HttpClientCall.bindInjected f x
+    member __.Bind (x, f) = HttpClientCall.bindResponse f x
     member __.Return x = HttpClientCall.create x
     member __.ReturnFrom (x: HttpClientCall<_,_>) : HttpClientCall<_,_> = x
     member __.ReturnFrom (x: AsyncResult<_,_>) : HttpClientCall<_,_> = HttpClientCall.ofAsyncResult x
@@ -93,6 +100,7 @@ type HttpClientBuilder () =
     member __.ReturnFrom (x: Result<_,_>) : HttpClientCall<_,_> = HttpClientCall.ofResult x
     member __.ReturnFrom (x: Injected<_,_>) : HttpClientCall<_,_> = HttpClientCall.ofInjected x
     member __.ReturnFrom (x: InjectedAsync<'a,HttpClientCallError<'e>>) : HttpClientCall<'a,'e> = HttpClientCall.ofInjectedAsync x
+    member __.ReturnFrom (x: HttpClientResponse<_>) : HttpClientCall<_,_> = HttpClientCall.ofResponse x
     member __.Yield x = HttpClientCall.create x
     member __.YieldFrom x = x
     member __.Zero () = HttpClientCall.create ()
