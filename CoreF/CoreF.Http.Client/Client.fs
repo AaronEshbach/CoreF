@@ -26,7 +26,7 @@ module HttpClient =
         fSetup client
         client
 
-    let rec sendRequest<'dto> (f: HttpClient -> Uri -> Async<HttpResponseMessage>) (uri: Uri) (client: HttpClient) : HttpClientCall<'dto> =
+    let rec sendRequest<'dto, 'error> (f: HttpClient -> Uri -> Async<HttpResponseMessage>) (uri: Uri) (client: HttpClient) : HttpClientCall<'dto, 'error> =
         injectedAsync {
             let! response = f client uri
             match response with
@@ -58,36 +58,36 @@ module HttpClient =
                     return HttpClientError (OtherClientError (other, error))
         } |> HttpClientCall
 
-    let get<'dto> uri client : HttpClientCall<'dto> =
-        client |> sendRequest<'dto> (fun client url -> client.GetAsync(url) |> Async.AwaitTask) uri
+    let get<'dto, 'error> uri client : HttpClientCall<'dto, 'error> =
+        client |> sendRequest<'dto, 'error> (fun client url -> client.GetAsync(url) |> Async.AwaitTask) uri
 
-    let post<'request, 'response> uri (request: 'request) client : HttpClientCall<'response> =
+    let post<'request, 'response, 'error> uri (request: 'request) client : HttpClientCall<'response, 'error> =
         injectedAsync {
-            let! requestContent = request |> Serializer.toContent |> Injected.mapError SerializationError
-            let (HttpClientCall result) = client |> sendRequest<'response> (fun client url -> client.PostAsync(url, requestContent) |> Async.AwaitTask) uri
+            let! requestContent = request |> Serializer.toContent |> Injected.mapError DeserializationError
+            let (HttpClientCall result) = client |> sendRequest<'response, 'error> (fun client url -> client.PostAsync(url, requestContent) |> Async.AwaitTask) uri
             return! result
         } |> HttpClientCall
 
-    let put<'request> uri (request: 'request) client : HttpClientCall<unit> =
+    let put<'request, 'error> uri (request: 'request) client : HttpClientCall<unit, 'error> =
         injectedAsync {
-            let! requestContent = request |> Serializer.toContent |> Injected.mapError SerializationError
-            let (HttpClientCall result) = client |> sendRequest<unit> (fun client url -> client.PutAsync(url, requestContent) |> Async.AwaitTask) uri
+            let! requestContent = request |> Serializer.toContent |> Injected.mapError DeserializationError
+            let (HttpClientCall result) = client |> sendRequest<unit, 'error> (fun client url -> client.PutAsync(url, requestContent) |> Async.AwaitTask) uri
             return! result
         } |> HttpClientCall
 
-    let patch<'request> uri (request: 'request) client : HttpClientCall<unit> =
+    let patch<'request, 'error> uri (request: 'request) client : HttpClientCall<unit, 'error> =
         injectedAsync {
-            let! requestContent = request |> Serializer.toContent |> Injected.mapError SerializationError
+            let! requestContent = request |> Serializer.toContent |> Injected.mapError DeserializationError
             let (HttpClientCall result) = 
-                client |> sendRequest<unit> (fun client url -> 
+                client |> sendRequest<unit, 'error> (fun client url -> 
                     use request = new HttpRequestMessage(HttpMethod("PATCH"), url)
                     request.Content <- requestContent
                     client.SendAsync(request) |> Async.AwaitTask) uri
             return! result
         } |> HttpClientCall
 
-    let delete uri client : HttpClientCall<unit> =
-        client |> sendRequest<unit> (fun client url -> client.DeleteAsync(url) |> Async.AwaitTask) uri
+    let delete<'error> uri client : HttpClientCall<unit, 'error> =
+        client |> sendRequest<unit, 'error> (fun client url -> client.DeleteAsync(url) |> Async.AwaitTask) uri
 
 
 module Url =

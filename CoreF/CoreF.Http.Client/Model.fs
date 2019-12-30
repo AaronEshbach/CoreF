@@ -20,10 +20,54 @@ type HttpClientResponse<'t> =
 | HttpClientError of HttpClientError
 | HttpServerError of HttpResponseMessage
 
-type HttpClientCallError =
+type HttpClientCallError<'e> =
 | InvalidRequestUri
-| SerializationError of SerializationError
 | DeserializationError of SerializationError
+| ClientProcessingError of 'e
 | UnexpectedHttpClientError of exn
 
-type HttpClientCall<'t> = HttpClientCall of InjectedAsync<HttpClientResponse<'t>, HttpClientCallError>
+type NoClientProcessingError = NoClientProcessingError
+
+type HttpClientCall<'t, 'e> = HttpClientCall of InjectedAsync<HttpClientResponse<'t>, HttpClientCallError<'e>>
+
+type HttpErrorResponse =
+    | ClientError of HttpClientError
+    | ServerError of HttpResponseMessage
+    member this.Response =
+        match this with
+        | ClientError error ->
+            match error with
+            | Unauthorized -> None
+            | Forbidden -> None
+            | NotFound -> None
+            | NotAcceptable -> None
+            | BadRequest response -> Some response
+            | UnprocessableEntity response -> Some response
+            | OtherClientError (_, response) -> Some response
+        | ServerError response ->
+            Some response
+    member this.StatusCode =
+        match this with
+        | ClientError error ->
+            match error with
+            | Unauthorized -> 401
+            | Forbidden -> 403
+            | NotFound -> 404
+            | NotAcceptable -> 406
+            | BadRequest _ -> 400
+            | UnprocessableEntity _ -> 422
+            | OtherClientError (status, _) -> status
+        | ServerError response ->
+            response.StatusCode |> int
+
+
+[<AutoOpen; CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module HttpClientResponse =
+    let (|HttpError|_|) (response: HttpClientResponse<_>) =
+        match response with
+        | HttpClientError error ->
+            Some <| ClientError error
+        | HttpServerError response ->
+            Some <| ServerError response
+        | _ -> 
+            None
