@@ -1,6 +1,7 @@
 ﻿namespace CoreF.Http
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open System
 
 type HttpApi<'response, 'error> = InjectedAsync<'response, 'error>

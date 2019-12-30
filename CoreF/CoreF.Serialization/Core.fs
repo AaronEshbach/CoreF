@@ -1,6 +1,7 @@
 ﻿namespace CoreF.Serialization
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open System
 open System.IO
 open System.Net.Http

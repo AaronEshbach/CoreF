@@ -1,6 +1,7 @@
 ﻿namespace CoreF.Http
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open FSharp.Reflection
 open System
 

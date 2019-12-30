@@ -1,6 +1,7 @@
 ﻿namespace CoreF.EventBus
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open CoreF.Domain
 open System
 

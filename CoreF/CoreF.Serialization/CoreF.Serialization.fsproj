@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
+    <ProjectReference Include="..\CoreF.DependencyInjection\CoreF.DependencyInjection.fsproj" />
   </ItemGroup>
 
 </Project>

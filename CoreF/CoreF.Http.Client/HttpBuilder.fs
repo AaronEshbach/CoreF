@@ -1,6 +1,7 @@
 ﻿namespace CoreF.Http.Client
 
 open CoreF.Common
+open CoreF.DependencyInjection
 
 module HttpClientCall =
     let create x = 

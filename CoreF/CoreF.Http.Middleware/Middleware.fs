@@ -1,8 +1,8 @@
 ﻿namespace CoreF.Http.Middleware
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open CoreF.Http
-open CoreF.Serialization
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Primitives

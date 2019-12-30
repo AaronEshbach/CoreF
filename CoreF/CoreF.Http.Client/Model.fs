@@ -1,6 +1,6 @@
 ﻿namespace CoreF.Http.Client
 
-open CoreF.Common
+open CoreF.DependencyInjection
 open CoreF.Serialization
 open System
 open System.Net.Http

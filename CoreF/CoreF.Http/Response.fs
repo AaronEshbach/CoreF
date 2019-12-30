@@ -1,6 +1,6 @@
 ﻿namespace CoreF.Http
 
-open CoreF.Common
+open CoreF.DependencyInjection
 open CoreF.Serialization
 open Newtonsoft.Json.Linq
 open System

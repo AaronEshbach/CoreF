@@ -1,6 +1,6 @@
 ﻿namespace CoreF.Logging
 
-open CoreF.Common
+open CoreF.DependencyInjection
 open Microsoft.Extensions.Logging
 
 /// Functional logging module, based on Printf syntax

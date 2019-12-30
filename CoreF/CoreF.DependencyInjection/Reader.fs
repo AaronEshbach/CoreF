@@ -1,6 +1,4 @@
-﻿namespace CoreF.Common
-
-open System
+﻿namespace CoreF.DependencyInjection
 
 /// Defines a standard 'Reader' monad
 type Reader<'a, 'b> = Reader of ('a -> 'b) 

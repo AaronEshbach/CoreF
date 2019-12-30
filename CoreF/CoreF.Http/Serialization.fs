@@ -1,7 +1,7 @@
 ﻿namespace CoreF.Http
 
 open CoreF.Common
-open CoreF.Domain
+open CoreF.DependencyInjection
 open CoreF.Mapping
 open CoreF.Serialization
 open CoreF.Validation

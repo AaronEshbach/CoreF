@@ -1,6 +1,7 @@
 ﻿namespace CoreF.Serialization
 
 open CoreF.Common
+open CoreF.DependencyInjection
 open System
 
 module Serializer =

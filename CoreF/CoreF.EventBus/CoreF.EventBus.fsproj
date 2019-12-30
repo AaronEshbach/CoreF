@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CoreF.DependencyInjection\CoreF.DependencyInjection.fsproj" />
     <ProjectReference Include="..\CoreF.Domain\CoreF.Domain.fsproj" />
   </ItemGroup>
 
