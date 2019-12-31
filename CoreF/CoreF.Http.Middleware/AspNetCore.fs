@@ -6,7 +6,7 @@ open Microsoft.Extensions.Hosting
 open System.Runtime.CompilerServices
  
 module CoreF =
-    let getConfig (env: IHostingEnvironment) = 
+    let getConfig (env: IHostEnvironment) = 
         ConfigurationBuilder()
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional = true, reloadOnChange = true)
@@ -14,11 +14,11 @@ module CoreF =
             .AddEnvironmentVariables()
             .Build()
 
-    let useMiddleware (app: IApplicationBuilder) =
+    let useHttpMiddleware (app: IApplicationBuilder) =
         app.UseMiddleware<HttpMiddleware>()
 
 [<Extension>]
 type AspNetExtensions =
     [<Extension>]
-    static member UseCoreF (app: IApplicationBuilder) = 
-        CoreF.useMiddleware app
+    static member UseCoreFHttp (app: IApplicationBuilder) = 
+        CoreF.useHttpMiddleware app
