@@ -11,7 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="HttpRequest.fs" />
     <Compile Include="Middleware.fs" />
     <Compile Include="AspNetCore.fs" />
   </ItemGroup>
@@ -25,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CoreF.Http.Middleware.Core\CoreF.Http.Middleware.Core.fsproj" />
     <ProjectReference Include="..\CoreF.Http\CoreF.Http.fsproj" />
   </ItemGroup>
 

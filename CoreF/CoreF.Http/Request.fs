@@ -93,7 +93,7 @@ module HttpRequest =
                 | RequestIdParameter parameter ->
                     match parameter.Type with
                     | t when t = typeof<RequestId> -> return! request.RequestId |> box |> Ok
-                    | t when t = typeof<Guid> -> return! request.RequestId |> RequestId.guidValue |> box |> Ok
+                    | t when t = typeof<Guid> -> return! request.RequestId |> RequestId.guid |> box |> Ok
                     | t when t = typeof<string> -> return! request.RequestId |> RequestId.value |> box |> Ok
                     | other -> return! Error <| UnsupportedMetadataParameterType other
                 | RequestUrlParameter parameter ->

@@ -9,13 +9,6 @@ open Microsoft.Extensions.Primitives
 open System.IO
 
 module internal Middleware =
-    let getRequest (context: HttpContext) = 
-        asyncResult {
-            use bodyStream = new MemoryStream()         
-            do! context.Request.Body.CopyToAsync(bodyStream) |> Async.AwaitTask
-            return AspNetHttpRequest(context, bodyStream.ToArray()) :> IHttpRequest
-        }
-
     let httpError requestId name message =
         {
             DebugId = requestId |> RequestId.value
@@ -113,7 +106,7 @@ module internal Middleware =
 
     let invoke (context: HttpContext) =
         asyncResult {
-            let! request = getRequest context
+            let! request = HttpContext.toRequest context
             let! entryPointResult = HttpRequest.findEntryPoint request |> Injected.run context.RequestServices |> Result.mapError UnresolveDependencies
             
             let! response = 

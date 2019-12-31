@@ -2,12 +2,13 @@
 
 open CoreF.Agent
 open CoreF.Common
+open CoreF.Http.Middleware
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Logging
 
 type internal AuditMessage =
-| Request of (HttpContext * AsyncReplyChannel<CoreF.Http.Auditing.HttpRequest>)
-| Response of (CoreF.Http.Auditing.HttpRequest * HttpContext * AsyncReplyChannel<unit>)
+| Request of (HttpContext * AsyncReplyChannel<CoreF.Http.IHttpRequest>)
+| Response of (CoreF.Http.IHttpRequest * HttpContext * AsyncReplyChannel<unit>)
 
 module internal AuditingAgent =
     let start numberOfAgents (log: ILogger) (auditor: IHttpAuditor) =

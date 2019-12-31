@@ -9,13 +9,13 @@
     <PackageTags>coref http rest</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
     <ProjectReference Include="..\CoreF.Domain\CoreF.Domain.fsproj" />
+    <ProjectReference Include="..\CoreF.Http.Core\CoreF.Http.Core.fsproj" />
     <ProjectReference Include="..\CoreF.Mapping\CoreF.Mapping.fsproj" />
     <ProjectReference Include="..\CoreF.Serialization\CoreF.Serialization.fsproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core.fs" />
+    <Compile Include="Errors.fs" />
     <Compile Include="Routing.fs" />
     <Compile Include="ApiVersion.fs" />
     <Compile Include="Models.fs" />

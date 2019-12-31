@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Compile Include="Model.fs" />
-    <Compile Include="HttpContext.fs" />
     <Compile Include="AuditingAgent.fs" />
     <Compile Include="Middleware.fs" />
     <Compile Include="AspNetCore.fs" />
@@ -27,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreF.Agent\CoreF.Agent.fsproj" />
     <ProjectReference Include="..\CoreF.Common\CoreF.Common.fsproj" />
+    <ProjectReference Include="..\CoreF.Http.Middleware.Core\CoreF.Http.Middleware.Core.fsproj" />
   </ItemGroup>
 
 </Project>
