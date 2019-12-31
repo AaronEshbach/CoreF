@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>F# Agent (Mailbox Processor) Enhancments, such as Router Agent, Pool Agent, and Pool Router.</Description>
+    <PackageTags>agent mailbox-processor coreF</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Router.fs" />
+    <Compile Include="Pool.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharpx.Collections" Version="2.1.2" />
+  </ItemGroup>
+
+</Project>

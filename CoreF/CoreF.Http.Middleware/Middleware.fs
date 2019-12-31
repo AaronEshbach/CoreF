@@ -111,7 +111,7 @@ module internal Middleware =
                     do! context.Response.WriteAsync("HTTP 500 - Internal Server Error") |> Async.AwaitTask
         }
 
-    let invoke (next: RequestDelegate) (context: HttpContext) =
+    let invoke (context: HttpContext) =
         asyncResult {
             let! request = getRequest context
             let! entryPointResult = HttpRequest.findEntryPoint request |> Injected.run context.RequestServices |> Result.mapError UnresolveDependencies
@@ -225,12 +225,12 @@ module internal Middleware =
                         Http.internalServerError None
                     |> AsyncResult.create
 
-            do! response |> populateResponse context |> Injected.run context.RequestServices
-
-            return! next.Invoke(context) |> Async.AwaitTask
+            return! response |> populateResponse context |> Injected.run context.RequestServices
         }
 
 type HttpMiddleware (next: RequestDelegate) =
     member __.InvokeAsync (context) =
-        context |> Middleware.invoke next 
-        |> AsyncResult.toTask
+        asyncResult {
+            do! context |> Middleware.invoke 
+            do! next.Invoke(context) |> Async.AwaitTask
+        } |> AsyncResult.toTask :> System.Threading.Tasks.Task

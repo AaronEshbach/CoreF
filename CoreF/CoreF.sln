@@ -27,6 +27,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Http.Client", "CoreF.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.DependencyInjection", "CoreF.DependencyInjection\CoreF.DependencyInjection.fsproj", "{93544B69-8E11-4110-A84A-023C77BA8552}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Http.Auditing", "CoreF.Http.Auditing\CoreF.Http.Auditing.fsproj", "{024768F7-893A-42A4-9362-6E7515ABAE97}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Agent", "CoreF.Agent\CoreF.Agent.fsproj", "{9FB2C89E-BCD6-48F9-9099-759B20D56478}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +85,14 @@ Global
 		{93544B69-8E11-4110-A84A-023C77BA8552}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93544B69-8E11-4110-A84A-023C77BA8552}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93544B69-8E11-4110-A84A-023C77BA8552}.Release|Any CPU.Build.0 = Release|Any CPU
+		{024768F7-893A-42A4-9362-6E7515ABAE97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{024768F7-893A-42A4-9362-6E7515ABAE97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{024768F7-893A-42A4-9362-6E7515ABAE97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{024768F7-893A-42A4-9362-6E7515ABAE97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FB2C89E-BCD6-48F9-9099-759B20D56478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FB2C89E-BCD6-48F9-9099-759B20D56478}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FB2C89E-BCD6-48F9-9099-759B20D56478}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FB2C89E-BCD6-48F9-9099-759B20D56478}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
