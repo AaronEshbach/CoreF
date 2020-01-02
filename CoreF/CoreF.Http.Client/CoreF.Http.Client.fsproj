@@ -9,6 +9,7 @@
     <Compile Include="Response.fs" />
     <Compile Include="Client.fs" />
     <Compile Include="HttpBuilder.fs" />
+    <Compile Include="HttpApiClient.fs" />
   </ItemGroup>
 
   <ItemGroup>
