@@ -17,6 +17,8 @@ type CacheKey = private CacheKey of string
 type IKeyGenerator<'model> =
     abstract member GetKey : 'model -> CacheKey
 
+type ICacheManager = interface end
+
 module CacheKey =   
     let create (key: string) =
         if key |> isNullOrEmpty then
@@ -31,5 +33,4 @@ module CacheKey =
         } |> Injected.mapError (fun _ -> KeyGeneratorNotFound typeof<'t>)
 
     let value (CacheKey key) = key
-
 

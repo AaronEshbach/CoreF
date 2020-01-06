@@ -1,5 +1,20 @@
 ﻿namespace CoreF.Gateway
 
-module Say =
-    let hello name =
-        printfn "Hello %s" name
+open CoreF.Http.Auditing
+open CoreF.Http.Caching
+open CoreF.Http.Middleware
+open Microsoft.AspNetCore.Builder
+open System.Runtime.CompilerServices
+
+module CoreF =
+    let useApiGateway (app: IApplicationBuilder) =
+        app.UseMiddleware<AuditingMiddleware>()
+           .UseMiddleware<CachingMiddleware>()
+           .UseMiddleware<HttpMiddleware>()
+
+
+[<Extension>]
+type AspNetExtensions =
+    [<Extension>]
+    static member UseCoreF (app: IApplicationBuilder) = 
+        CoreF.useApiGateway app

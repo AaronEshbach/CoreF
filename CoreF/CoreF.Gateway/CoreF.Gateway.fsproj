@@ -14,4 +14,10 @@
     <Compile Include="Core.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CoreF.Http.Auditing\CoreF.Http.Auditing.fsproj" />
+    <ProjectReference Include="..\CoreF.Http.Caching\CoreF.Http.Caching.fsproj" />
+    <ProjectReference Include="..\CoreF.Http.Middleware\CoreF.Http.Middleware.fsproj" />
+  </ItemGroup>
+
 </Project>
