@@ -46,11 +46,11 @@ module HttpClient =
                 | 400 ->
                     return HttpClientError (BadRequest error)
                 | 401 | 403 ->
-                    return HttpClientError Unauthorized
+                    return HttpClientError <| Unauthorized uri
                 | 404 ->
-                    return HttpClientError NotFound
+                    return HttpClientError <| NotFound uri
                 | 406 ->
-                    return HttpClientError NotAcceptable
+                    return HttpClientError <| NotAcceptable uri
                 | 422 ->
                     return HttpClientError (UnprocessableEntity error)
                 | serverError when serverError >= 500 ->
