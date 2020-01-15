@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreF.Http.Middleware.Core\CoreF.Http.Middleware.Core.fsproj" />
+    <ProjectReference Include="..\CoreF.Tracing\CoreF.Tracing.fsproj" />
+  </ItemGroup>
+
+</Project>
