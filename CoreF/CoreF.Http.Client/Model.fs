@@ -23,6 +23,7 @@ type HttpClientResponse<'t> =
 type HttpClientCallError<'e> =
 | InvalidRequestUri
 | DeserializationError of SerializationError
+| DependencyInjectionError of DependencyInjectionError
 | ClientProcessingError of 'e
 | MultipleHttpClientCallErrors of HttpClientCallError<'e> list
 | UnexpectedHttpClientError of exn

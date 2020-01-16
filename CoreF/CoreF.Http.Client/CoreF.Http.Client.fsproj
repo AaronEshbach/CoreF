@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreF.DependencyInjection\CoreF.DependencyInjection.fsproj" />
     <ProjectReference Include="..\CoreF.Serialization\CoreF.Serialization.fsproj" />
+    <ProjectReference Include="..\CoreF.Tracing\CoreF.Tracing.fsproj" />
     <ProjectReference Include="..\CoreF.Validation\CoreF.Validation.fsproj" />
   </ItemGroup>
 

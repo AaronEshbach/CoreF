@@ -123,9 +123,8 @@ type HttpClientBuilder () =
     member this.Using(resource : 'T when 'T :> System.IDisposable, binder : 'T -> HttpClientCall<_,_>) : HttpClientCall<_,_> = 
         let body' = fun () -> binder resource
         this.TryFinally(body', fun () -> 
-            match resource with 
-                | null -> () 
-                | disp -> disp.Dispose())
+            if resource |> isNotNull
+            then resource.Dispose())
 
     member this.While (guard, body: unit -> HttpClientCall<_,_>) : HttpClientCall<_,_> =
         if not (guard()) then 

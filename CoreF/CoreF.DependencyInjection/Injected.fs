@@ -1,5 +1,6 @@
 ﻿namespace CoreF.DependencyInjection
 
+open CoreF.Common
 open System
 
 type DependencyInjectionError =
@@ -63,6 +64,17 @@ module Injected =
     let ignore (i: Injected<_,_>) =
         i |> map ignore
 
+    let orElseWith<'a, 'e> (f: unit -> 'a) (x: Injected<'a, 'e>) : Injected<'a, 'e> =
+        let future state =
+            let result = run state x 
+            match result with
+            | Ok z ->
+                z
+            | Error _ ->
+                f ()
+            |> Ok
+        Reader future
+
 type InjectionBuilder<'t> () =
     member __.Bind (x, f) : Injected<_,_> = Injected.bind f x
     member __.Bind (x, f) : Injected<_,_> = Injected.bindResult f x
@@ -81,9 +93,8 @@ type InjectionBuilder<'t> () =
     member this.Using(resource : 'T when 'T :> System.IDisposable, binder : 'T -> Injected<'a, 'e>) : Injected<'a, 'e> = 
         let body' = fun () -> binder resource
         this.TryFinally(body', fun () -> 
-            match resource with 
-                | null -> () 
-                | disp -> disp.Dispose())
+            if resource |> isNotNull
+            then resource.Dispose())
 
     member this.While (guard, body: unit -> Injected<_,_>) : Injected<_,_> =
         if not (guard()) then 

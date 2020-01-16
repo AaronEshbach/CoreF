@@ -133,17 +133,16 @@ type AsyncInjectionBuilder<'t> () =
     member __.Delay (f) : InjectedAsync<_,_> = f()
     member __.Combine (a, b) : InjectedAsync<_,_> =
         a |> InjectedAsync.bind (fun () -> b)
-    member this.TryFinally(body: unit -> InjectedAsync<_,_>, compensation) : InjectedAsync<_,_> =
+    member this.TryFinally(body: InjectedAsync<_,_>, compensation) : InjectedAsync<_,_> =
         try 
-            this.ReturnFrom(body())
+            this.ReturnFrom(body)
         finally 
             compensation()
     member this.Using(resource : 'T when 'T :> System.IDisposable, binder : 'T -> InjectedAsync<'a, 'e>) : InjectedAsync<'a, 'e> = 
-        let body' = fun () -> binder resource
-        this.TryFinally(body', fun () -> 
-            match resource with 
-                | null -> () 
-                | disp -> disp.Dispose())
+        let body =  binder resource
+        this.TryFinally(body, fun () -> 
+            if resource |> isNotNull
+            then resource.Dispose())
 
     member this.While (guard, body: unit -> InjectedAsync<_,_>) : InjectedAsync<_,_> =
         if not (guard()) then 

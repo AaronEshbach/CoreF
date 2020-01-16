@@ -33,7 +33,8 @@ module TraceEvent =
         event.StartActive()
 
     let log (message: string) (scope: IScope) =
-        scope.Span.Log(message)
+        scope.Span.Log(message) |> ignore
+        scope
 
     let finish (scope: IScope) =
         scope.Span.Finish()

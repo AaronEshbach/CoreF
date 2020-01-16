@@ -109,10 +109,9 @@ type ResultBuilder() =
         finally compensation()
     member this.Using(d:#IDisposable, body) =
         let result = fun () -> body d
-        this.TryFinally (result, fun () ->
-            match box d with
-            | null -> ()
-            | _ -> d.Dispose())
+        this.TryFinally(result, fun () -> 
+            if d |> isNotNull
+            then d.Dispose())
     member this.While (guard, body) =
         if guard () 
         then Result.bind (fun () -> this.While(guard, body)) (body())

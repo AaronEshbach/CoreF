@@ -109,9 +109,8 @@ type HttpApiBuilder () =
     member this.Using(resource : 'T when 'T :> System.IDisposable, binder : 'T -> HttpApi<'a, 'e>) : HttpApi<'a, 'e> = 
         let body' = fun () -> binder resource
         this.TryFinally(body', fun () -> 
-            match resource with 
-                | null -> () 
-                | disp -> disp.Dispose())
+            if resource |> isNotNull
+            then resource.Dispose())
 
     member this.While (guard, body: unit -> HttpApi<_,_>) : HttpApi<_,_> =
         if not (guard()) then 
