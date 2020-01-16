@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>0.1.0-prerelease</Version>
+    <Authors>Eshbach, Aaron</Authors>
+    <Company>CoreF</Company>
+    <Description>CoreF Distributed Tracing package using Jaeger to implement the OpenTracing standard.</Description>
+    <PackageTags>coreF tracing open-tracing jaeger</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

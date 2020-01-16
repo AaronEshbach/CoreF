@@ -7,7 +7,7 @@
     <Authors>Eshbach, Aaron</Authors>
     <Company>CoreF</Company>
     <Description>CoreF OpenTracing Library, F# API for OpenTracing-compatible clients</Description>
-    <PackageTags>coreF tracing opentracing</PackageTags>
+    <PackageTags>coreF tracing open-tracing</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

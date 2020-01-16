@@ -18,6 +18,7 @@
     <ProjectReference Include="..\CoreF.Http.Auditing\CoreF.Http.Auditing.fsproj" />
     <ProjectReference Include="..\CoreF.Http.Caching\CoreF.Http.Caching.fsproj" />
     <ProjectReference Include="..\CoreF.Http.Middleware\CoreF.Http.Middleware.fsproj" />
+    <ProjectReference Include="..\CoreF.Http.Tracing\CoreF.Http.Tracing.fsproj" />
   </ItemGroup>
 
 </Project>
