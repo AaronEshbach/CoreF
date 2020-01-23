@@ -10,10 +10,10 @@ open Newtonsoft.Json.Serialization
 
 open System
 open System.Collections.Concurrent
+open System.Globalization
 open System.IO
 open System.Net.Http
 open System.Reflection
-open System.Xml.Serialization
 
 /// Enable transparent serialization of F# Discriminated Unions
 type TransparentUnionAttribute() =
@@ -40,6 +40,19 @@ type AttributeBasedConverter() as converter =
 type AttributeBasedConverter<'attribute when 'attribute :> Attribute> () =
     inherit AttributeBasedConverter()
     override __.Attribute = typeof<'attribute>
+
+type FlexibleReadUniformWriteIsoDateTimeConverter () =
+    inherit IsoDateTimeConverter(DateTimeStyles = DateTimeStyles.AdjustToUniversal, DateTimeFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.fffK")
+
+    override __.ReadJson (reader, clrType, initialValue, serializer) =
+        match box reader.Value with
+        | :? DateTime as date -> 
+            date.ToUniversalTime() |> box
+        | other ->
+            let dateString = other.ToString()
+            match dateString |> tryParse<DateTime> with
+            | Some date -> date.ToUniversalTime() |> box
+            | None -> raise <| JsonSerializationException(sprintf "The value %s could not be deserialized as a Date/Time" dateString)
 
 type OneOfConverter() =
     inherit AttributeBasedConverter<TransparentUnionAttribute>()
@@ -169,7 +182,7 @@ type AllOfConverter () =
         | _ -> false
 
     let rec getProperty (container: Type) (parent: Type) (property: PropertyInfo) =
-        if property.PropertyType |> isObject |> not || container.GetCustomAttribute<AllOfAttribute>() |> isNull then
+        if property.PropertyType.IsArray || property.PropertyType |> isObject |> not || parent.GetCustomAttribute<AllOfAttribute>() |> isNull then
             Normal property
         else
             let instance = Activator.CreateInstance(property.PropertyType)
@@ -206,10 +219,16 @@ type AllOfConverter () =
         writer.WriteEndObject()
 
     override __.ReadJson (reader, objectType, initialValue, serializer) =
+        let realObjectType =
+            if objectType.IsGenericType && objectType.GetGenericTypeDefinition() = typedefof<Nullable<_>> then
+                objectType.GetGenericArguments() |> Seq.tryHead |> Option.defaultValue objectType
+            else
+                objectType
+
         let objectMap =
-            objectType.GetProperties() 
+            realObjectType.GetProperties() 
             |> Seq.map (fun property -> 
-                let fields = getProperties objectType property.PropertyType
+                let fields = getProperties realObjectType property.PropertyType
                 let instance = Activator.CreateInstance(property.PropertyType)
                 {Property = property; Instance = instance; Fields = fields})
             |> Seq.toList
@@ -222,7 +241,7 @@ type AllOfConverter () =
                     property.SetField(jsonProperty.Name, fieldValue)
                 | None ->
                     ()
-        let allOfObject = Activator.CreateInstance(objectType)
+        let allOfObject = Activator.CreateInstance(realObjectType)
         objectMap |> setInstanceValues allOfObject
         allOfObject
 
@@ -245,7 +264,7 @@ module internal JsonSettings =
                         DefaultValueHandling = Default.DefaultValueHandling,
                         MissingMemberHandling = Default.MissingMemberHandling,
                         TypeNameHandling = Default.TypeNameHandling,
-                        Converters = [| StringEnumConverter(); OneOfConverter(); AllOfConverter(); |]
+                        Converters = [| StringEnumConverter(); FlexibleReadUniformWriteIsoDateTimeConverter(); OneOfConverter(); AllOfConverter(); |]
                     )
 
 type JsonSerializer () =
