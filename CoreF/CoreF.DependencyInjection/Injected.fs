@@ -85,14 +85,14 @@ type InjectionBuilder<'t> () =
     member __.Delay (f) : Injected<_,_> = f()
     member __.Combine (a, b) : Injected<_,_> =
         a |> Injected.bind (fun () -> b)
-    member this.TryFinally(body: unit -> Injected<_,_>, compensation) : Injected<_,_> =
+    member this.TryFinally(body: Injected<_,_>, compensation) : Injected<_,_> =
         try 
-            this.ReturnFrom(body())
+            this.ReturnFrom(body)
         finally 
             compensation()
     member this.Using(resource : 'T when 'T :> System.IDisposable, binder : 'T -> Injected<'a, 'e>) : Injected<'a, 'e> = 
-        let body' = fun () -> binder resource
-        this.TryFinally(body', fun () -> 
+        let body = binder resource
+        this.TryFinally(body, fun () -> 
             if resource |> isNotNull
             then resource.Dispose())
 

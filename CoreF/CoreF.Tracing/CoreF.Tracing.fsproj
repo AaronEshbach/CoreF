@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="Core.fs" />
     <Compile Include="Tracing.fs" />
+    <Compile Include="TraceBuilder.fs" />
   </ItemGroup>
 
   <ItemGroup>
