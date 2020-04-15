@@ -37,11 +37,11 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Http.Core", "CoreF.Ht
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Http.Middleware.Core", "CoreF.Http.Middleware.Core\CoreF.Http.Middleware.Core.fsproj", "{0EEE0D1E-FA17-46E2-94EC-F15B83CFA17B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Tracing", "CoreF.Tracing\CoreF.Tracing.fsproj", "{B60CEAD3-67F6-4FCE-A88B-DD4654CEFDA7}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Tracing", "CoreF.Tracing\CoreF.Tracing.fsproj", "{B60CEAD3-67F6-4FCE-A88B-DD4654CEFDA7}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Http.Tracing", "CoreF.Http.Tracing\CoreF.Http.Tracing.fsproj", "{384D5929-3143-40BF-B085-103AA2BC4990}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Http.Tracing", "CoreF.Http.Tracing\CoreF.Http.Tracing.fsproj", "{384D5929-3143-40BF-B085-103AA2BC4990}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CoreF.Tracing.Jaeger", "CoreF.Tracing.Jaeger\CoreF.Tracing.Jaeger.fsproj", "{AE19AAE8-17F8-4B30-B3CD-3608BA3D9707}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "CoreF.Tracing.Jaeger", "CoreF.Tracing.Jaeger\CoreF.Tracing.Jaeger.fsproj", "{AE19AAE8-17F8-4B30-B3CD-3608BA3D9707}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

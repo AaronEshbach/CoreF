@@ -338,3 +338,13 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/CoreF/CoreF.Control/Library.fs
+/CoreF/CoreF.Control/CoreF.Control.fsproj
+/CoreF/CoreF.Control
+/CoreF/CoreF.Actors/Process.fs
+/CoreF/CoreF.Actors/Operators.fs
+/CoreF/CoreF.Actors/Model.fs
+/CoreF/CoreF.Actors/Messages.fs
+/CoreF/CoreF.Actors/Mailbox.fs
+/CoreF/CoreF.Actors/CoreF.Actors.fsproj
+/CoreF/CoreF.Actors
